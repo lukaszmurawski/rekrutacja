@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: phoenix_app
+    ports:
+      - "5432:5432"
+
+  phoenix:
+    build: ./phoenix-api
+    volumes:
+    - ./phoenix-api:/app
+    environment:
+      MIX_ENV: dev
+      DATABASE_URL: ecto://postgres:postgres@db/phoenix_app
+      SECRET_KEY_BASE: changemechangemechangemechangeme
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+
+  symfony:
+    build: ./symfony-app
+    volumes:
+    - ./symfony-app:/var/www/symfony
+    environment:
+      APP_ENV: dev
+      API_BASE_URL: http://phoenix:4000
+    depends_on:
+      - phoenix
+    ports:
+      - "8000:8000"
