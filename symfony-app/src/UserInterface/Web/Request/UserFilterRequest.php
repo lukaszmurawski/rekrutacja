@@ -6,29 +6,32 @@ namespace App\UserInterface\Web\Request;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserRequest
+class UserFilterRequest
 {
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
     #[Assert\Regex(
         pattern: '/^[A-Za-zÀ-žąĄćĆęĘłŁńŃóÓśŚżŻźŹ \-]+$/u',
         message: 'Incorrect characters'
     )]
-    public string $first_name;
+    public ?string $first_name = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
     #[Assert\Regex(
         pattern: '/^[A-Za-zÀ-žąĄćĆęĘłŁńŃóÓśŚżŻźŹ \-]+$/u',
         message: 'Incorrect characters'
     )]
-    public string $last_name;
+    public ?string $last_name = null;
 
-    #[Assert\NotBlank]
     #[Assert\Date]
-    public string $birthdate;
+    public ?string $birthdate_from = null;
 
-    #[Assert\NotBlank]
+    #[Assert\Date]
+    public ?string $birthdate_to = null;
+
     #[Assert\Choice(['male', 'female'])]
-    public string $gender;
+    public ?string $gender = null;
+
+    #[Assert\Choice(['first_name', 'last_name', 'gender', 'birthdate'])]
+    public ?string $sort_by = null;
+
+    #[Assert\Choice(['asc', 'desc'])]
+    public ?string $sort_dir = null;
 }

@@ -27,6 +27,13 @@
             <th data-sort="gender">Gender</th>
             <th>Actions</th>
         </tr>
+        <tr>
+            <th><input type="text" id="filter-first_name" class="filter-input" placeholder="Search..."></th>
+            <th><input type="text" id="filter-last_name" class="filter-input" placeholder="Search..."></th>
+            <th><input type="text" id="filter-birthdate" class="filter-input" placeholder="YYYY-MM-DD"></th>
+            <th><input type="text" id="filter-gender" class="filter-input" placeholder="male/female"></th>
+            <th></th>
+        </tr>
     </thead>
     <tbody></tbody>
 </table>
@@ -56,8 +63,33 @@
     let sortBy = 'first_name';
     let sortDir = 'asc';
 
+    let filters = {
+        first_name: '',
+        last_name: '',
+        birthdate: '',
+        gender: ''
+    };
+
+    let filterTimeout = null;
+
+    function buildQueryParams() {
+        const params = new URLSearchParams();
+
+        params.append("sort_by", sortBy);
+        params.append("sort_dir", sortDir);
+
+        Object.keys(filters).forEach(key => {
+            if (filters[key].trim() !== '') {
+                params.append(key, filters[key]);
+            }
+        });
+
+        return params.toString();
+    }
+
     async function loadUsers() {
-        const res = await fetch(`${API}?sort_by=${sortBy}&sort_dir=${sortDir}`);
+        const query = buildQueryParams();
+        const res = await fetch(`${API}?${query}`);
         const users = await res.json();
 
         const tbody = document.querySelector('#users-table tbody');
@@ -93,6 +125,18 @@
             }
 
             loadUsers();
+        });
+    });
+
+    document.querySelectorAll('.filter-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+            const id = e.target.id.replace('filter-', '');
+            filters[id] = e.target.value;
+
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(() => {
+                loadUsers();
+            }, 3000);
         });
     });
 

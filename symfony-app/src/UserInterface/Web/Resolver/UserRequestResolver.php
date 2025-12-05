@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Request;
 use App\UserInterface\Web\Request\UserRequest;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 
 class UserRequestResolver implements ValueResolverInterface

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\UserInterface\Web;
 
 use App\Domain\User\Port\UserApiClientInterface;
+use App\UserInterface\Web\Request\UserFilterRequest;
 use App\UserInterface\Web\Request\UserRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/api/users')]
 class UserController extends AbstractController
@@ -22,11 +22,13 @@ class UserController extends AbstractController
     }
 
     #[Route('', name: 'list_users', methods: ['GET'])]
-    public function list(Request $request): JsonResponse
+    public function list(UserFilterRequest|array $filter): JsonResponse
     {
-        $filters = $request->query->all();
-        
-        return $this->json($this->userApi->list($filters));
+        if (is_array($filter) && isset($filter['errors'])) {
+            return $this->json($filter, 400);
+        }
+
+        return $this->json($this->userApi->list((array)$filter));
     }
 
     #[Route('/{id}', name: 'get_user', methods: ['GET'])]

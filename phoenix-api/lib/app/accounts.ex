@@ -27,16 +27,16 @@ defmodule App.Accounts do
     |> filter_date_to(params["birthdate_to"])
   end
 
-  # --- filtr tekstowy ---
+  # --- filtr tekstowy (poprawiony: ILIKE %value%) ---
   defp filter_string(query, _field, nil), do: query
   defp filter_string(query, _field, ""), do: query
 
   defp filter_string(query, field, value) when field in @allowed_string_fields do
-    where(query, [u], field(u, ^field) == ^value)
+    where(query, [u], ilike(field(u, ^field), ^"%#{value}%"))
   end
 
   defp filter_string(query, _field, _value),
-    do: query   # ignoruje nieznane pola (bez błędów)
+    do: query
 
   # --- data od ---
   defp filter_date_from(query, nil), do: query

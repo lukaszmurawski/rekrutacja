@@ -48,3 +48,5 @@ Jeśli potrzebujesz bezpośredniego dostępu do bazy danych możesz użyć tych 
 * Pusta Lista: Jeśli baza danych jest pusta (brak żadnych rekordów), nie zobaczysz listy osób. Będzie widoczny tylko formularz, którym możesz dodać pierwszą osobę.
 
 * Przycisk "import" wegeneruje 100 osób z losowymi personaliami
+
+* Filtrowanie przyjmuje tylko litery, odświeża listę 3 sekundy po wpisaniu ostatniej litery w pole filtra
