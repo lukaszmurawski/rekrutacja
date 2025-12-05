@@ -12,11 +12,16 @@ class PhoenixApiClient implements UserApiClientInterface
 {
     private HttpClientInterface $client;
     private string $url;
+    private string $token;
 
-    public function __construct(HttpClientInterface $client, string $url)
-    {
+    public function __construct(
+        HttpClientInterface $client,
+        string $url,
+        string $token
+    ) {
         $this->client = $client;
         $this->url = rtrim($url, '/');
+        $this->token = $token;
     }
 
     public function list(array $filters = []): array
@@ -65,7 +70,11 @@ class PhoenixApiClient implements UserApiClientInterface
 
     public function import(): array
     {
-        $response = $this->client->request('POST', $this->url.'/import');
+        $response = $this->client->request('POST', $this->url.'/import', [
+            'headers' => [
+                'x-import-token' => $this->token
+            ]
+        ]);
 
         return $response->toArray();
     }

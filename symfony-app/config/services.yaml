@@ -22,3 +22,4 @@ services:
     App\Infrastructure\User\PhoenixApiClient:
         arguments:
             $url: '%env(PHOENIX_API_URL)%'
+            $token: '%env(IMPORT_API_TOKEN)%'

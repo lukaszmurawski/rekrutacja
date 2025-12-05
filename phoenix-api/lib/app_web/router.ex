@@ -5,12 +5,17 @@ defmodule AppWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :import_api do
+    plug AppWeb.Plugs.EnsureImportToken
+  end
+
   scope "/api", AppWeb do
     pipe_through :api
   end
 
   scope "/", AppWeb do
-    pipe_through :api
+    pipe_through [:api, :import_api]
+
     post "/import", ImportController, :import
   end
 
