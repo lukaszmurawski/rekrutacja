@@ -40,14 +40,18 @@ class PhoenixApiClient implements UserApiClientInterface
 
     public function create(array $data): array
     {
-        $response = $this->client->request('POST', $this->url.'/users');
+        $response = $this->client->request('POST', $this->url.'/users', [
+            'json' => $data,
+        ]);
 
         return $response->toArray();
     }
 
     public function update(string $id, array $data): array
     {
-        $response = $this->client->request('PUT', $this->url.'/users/'.$id);
+        $response = $this->client->request('PUT', $this->url.'/users/'.$id, [
+            'json' => $data,
+        ]);
 
         return $response->toArray();
     }
