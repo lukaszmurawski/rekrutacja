@@ -62,10 +62,10 @@ class UserController extends AbstractController
     }
 
     #[Route('/import', name: 'import_users', methods: ['POST'])]
-    public function import(Request $request): JsonResponse
+    public function import(): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $this->userApi->import();
 
-        return $this->json($this->userApi->import($data));
+        return $this->json(null,  204);
     }
 }

@@ -63,7 +63,7 @@ class PhoenixApiClient implements UserApiClientInterface
         return $response->getStatusCode() === 204;
     }
 
-    public function import(array $data): array
+    public function import(): array
     {
         $response = $this->client->request('POST', $this->url.'/import');
 

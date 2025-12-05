@@ -48,9 +48,10 @@
     <button type="submit">Save</button>
     <button type="button" id="reset-btn">Reset</button>
 </form>
+<button onclick="importUsers()">Import</button>
 
 <script>
-    const API = '/api/users'; // Symfony endpoint that proxies to Phoenix
+    const API = '/api/users';
 
     let sortBy = 'first_name';
     let sortDir = 'asc';
@@ -110,6 +111,11 @@
 
     deleteUser = async (id) => {
         await fetch(`${API}/${id}`, { method: 'DELETE' });
+        loadUsers();
+    };
+
+    importUsers = async () => {
+        await fetch(`${API}/import`, { method: 'POST' });
         loadUsers();
     };
 
