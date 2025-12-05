@@ -11,6 +11,8 @@ config :app,
   ecto_repos: [App.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :app, :data_fetcher_module, App.External.PeselDataFetcher
+
 # Configures the endpoint
 config :app, AppWeb.Endpoint,
   url: [host: "localhost"],

@@ -53,7 +53,8 @@ defmodule App.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:finch, "~> 0.8"},
-      {:nimble_csv, "~> 1.2"}
+      {:csv, "~> 3.0"},
+      {:httpoison, "~> 1.8"}
     ]
   end
 

@@ -9,6 +9,11 @@ defmodule AppWeb.Router do
     pipe_through :api
   end
 
+  scope "/", AppWeb do
+    pipe_through :api
+    post "/import", ImportController, :import
+  end
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:app, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
