@@ -68,7 +68,7 @@ class PhoenixApiClient implements UserApiClientInterface
         return $response->getStatusCode() === 204;
     }
 
-    public function import(): array
+    public function import(): bool
     {
         $response = $this->client->request('POST', $this->url.'/import', [
             'headers' => [
@@ -76,6 +76,6 @@ class PhoenixApiClient implements UserApiClientInterface
             ]
         ]);
 
-        return $response->toArray();
+        return $response->getStatusCode() === 201;
     }
 }
