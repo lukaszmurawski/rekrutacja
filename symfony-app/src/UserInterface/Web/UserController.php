@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UserInterface\Web;
 
 use App\Domain\User\Port\UserApiClientInterface;
+use App\UserInterface\Web\Request\UserRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,19 +39,21 @@ class UserController extends AbstractController
     }
 
     #[Route('', name: 'create_user', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(UserRequest|array $userRequest): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        return $this->json($this->userApi->create($data));
+        return $this->handleUserRequest(
+            $userRequest,
+            fn(UserRequest $data) => $this->userApi->create((array)$data)
+        );
     }
 
     #[Route('/{id}', name: 'update_user', methods: ['PUT'])]
-    public function update(string $id, Request $request): JsonResponse
+    public function update(string $id,UserRequest|array $userRequest): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        return $this->json($this->userApi->update($id, $data));
+        return $this->handleUserRequest(
+            $userRequest,
+            fn(UserRequest $data) => $this->userApi->create((array)$data)
+        );
     }
 
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
@@ -67,5 +70,16 @@ class UserController extends AbstractController
         if (!$this->userApi->import()) return $this->json(['error' => 'Something went wrong'], 500);
 
         return $this->json(null,  204);
+    }
+
+    private function handleUserRequest(UserRequest|array $userRequest, callable $callback): JsonResponse
+    {
+        if (is_array($userRequest) && isset($userRequest['errors'])) {
+            return $this->json($userRequest, 400);
+        }
+
+        $result = $callback($userRequest);
+
+        return $this->json($result);
     }
 }

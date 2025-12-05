@@ -23,3 +23,6 @@ services:
         arguments:
             $url: '%env(PHOENIX_API_URL)%'
             $token: '%env(IMPORT_API_TOKEN)%'
+
+    App\UserInterface\Web\Resolver\UserRequestResolver:
+        tags: [controller.argument_value_resolver]
