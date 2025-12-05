@@ -14,6 +14,17 @@ defmodule AppWeb.Router do
     post "/import", ImportController, :import
   end
 
+  scope "/users", AppWeb do
+    pipe_through :api
+
+    get "/", UserController, :index
+    get "/:id", UserController, :show
+    post "/", UserController, :create
+    put "/:id", UserController, :update
+    delete "/:id", UserController, :delete
+  end
+
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:app, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put

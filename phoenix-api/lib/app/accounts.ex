@@ -1,104 +1,116 @@
 defmodule App.Accounts do
-  @moduledoc """
-  The Accounts context.
-  """
-
-  import Ecto.Query, warn: false
+  import Ecto.Query
   alias App.Repo
-
   alias App.Accounts.User
 
-  @doc """
-  Returns the list of users.
-
-  ## Examples
-
-      iex> list_users()
-      [%User{}, ...]
-
-  """
-  def list_users do
-    Repo.all(User)
+  # -------------------------
+  # GET /users (lista)
+  # -------------------------
+  def list_users(params \\ %{}) do
+    User
+    |> filter(params)
+    |> sort(params)
+    |> Repo.all()
   end
 
-  @doc """
-  Gets a single user.
+  # -------------------------
+  # Filtrowanie
+  # -------------------------
+  @allowed_string_fields ~w(first_name last_name gender)a
 
-  Raises `Ecto.NoResultsError` if the User does not exist.
+  defp filter(query, params) do
+    query
+    |> filter_string(:first_name, params["first_name"])
+    |> filter_string(:last_name, params["last_name"])
+    |> filter_string(:gender, params["gender"])
+    |> filter_date_from(params["birthdate_from"])
+    |> filter_date_to(params["birthdate_to"])
+  end
 
-  ## Examples
+  # --- filtr tekstowy ---
+  defp filter_string(query, _field, nil), do: query
+  defp filter_string(query, _field, ""), do: query
 
-      iex> get_user!(123)
-      %User{}
+  defp filter_string(query, field, value) when field in @allowed_string_fields do
+    where(query, [u], field(u, ^field) == ^value)
+  end
 
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
+  defp filter_string(query, _field, _value),
+    do: query   # ignoruje nieznane pola (bez błędów)
 
-  """
+  # --- data od ---
+  defp filter_date_from(query, nil), do: query
+  defp filter_date_from(query, ""), do: query
+  defp filter_date_from(query, value) do
+    {:ok, date} = Date.from_iso8601(value)
+    where(query, [u], u.birthdate >= ^date)
+  end
+
+  # --- data do ---
+  defp filter_date_to(query, nil), do: query
+  defp filter_date_to(query, ""), do: query
+  defp filter_date_to(query, value) do
+    {:ok, date} = Date.from_iso8601(value)
+    where(query, [u], u.birthdate <= ^date)
+  end
+
+  # -------------------------
+  # Sortowanie
+  # -------------------------
+  @allowed_sort ~w(first_name last_name gender birthdate inserted_at)a
+
+  defp sort(query, %{"sort_by" => field, "sort_dir" => dir})
+       when dir in ["asc", "desc"] do
+    field_atom = safe_atom(field)
+
+    if field_atom in @allowed_sort do
+      direction = if dir == "asc", do: :asc, else: :desc
+      order_by(query, [u], [{^direction, field(u, ^field_atom)}])
+    else
+      query
+    end
+  end
+
+  defp sort(query, _), do: query
+
+  defp safe_atom(value) do
+    try do
+      String.to_existing_atom(value)
+    rescue
+      ArgumentError -> nil
+    end
+  end
+
+  # -------------------------
+  # GET /users/:id
+  # -------------------------
   def get_user!(id), do: Repo.get!(User, id)
 
-  @doc """
-  Creates a user.
-
-  ## Examples
-
-      iex> create_user(%{field: value})
-      {:ok, %User{}}
-
-      iex> create_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user(attrs) do
+  # -------------------------
+  # POST /users
+  # -------------------------
+  def create_user(params) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.changeset(params)
     |> Repo.insert()
   end
 
-  @doc """
-  Updates a user.
-
-  ## Examples
-
-      iex> update_user(user, %{field: new_value})
-      {:ok, %User{}}
-
-      iex> update_user(user, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user(%User{} = user, attrs) do
-    user
-    |> User.changeset(attrs)
+  # -------------------------
+  # PUT /users/:id
+  # -------------------------
+  def update_user(id, params) do
+    id
+    |> get_user!()
+    |> User.changeset(params)
     |> Repo.update()
   end
 
-  @doc """
-  Deletes a user.
-
-  ## Examples
-
-      iex> delete_user(user)
-      {:ok, %User{}}
-
-      iex> delete_user(user)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_user(%User{} = user) do
-    Repo.delete(user)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user(user)
-      %Ecto.Changeset{data: %User{}}
-
-  """
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
+  # -------------------------
+  # DELETE /users/:id
+  # -------------------------
+  def delete_user(id) do
+    id
+    |> get_user!()
+    |> Repo.delete()
   end
 end
