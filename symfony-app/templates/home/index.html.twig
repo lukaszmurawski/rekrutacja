@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Users Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ccc; }
+        th { cursor: pointer; }
+        form { margin-top: 30px; }
+        input, select { padding: 6px; margin: 5px 0; width: 200px; }
+        button { padding: 8px 12px; margin-top: 10px; cursor: pointer; }
+        .actions button { margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<h1>Users</h1>
+
+<table id="users-table">
+    <thead>
+        <tr>
+            <th data-sort="first_name">First Name</th>
+            <th data-sort="last_name">Last Name</th>
+            <th data-sort="birthdate">Birthdate</th>
+            <th data-sort="gender">Gender</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2 id="form-title">Add User</h2>
+
+<form id="user-form">
+    <input type="hidden" id="user-id">
+    <input type="text" id="first_name" placeholder="First Name" required><br>
+    <input type="text" id="last_name" placeholder="Last Name" required><br>
+    <input type="date" id="birthdate" required><br>
+
+    <select id="gender" required>
+        <option value="">Choose gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select><br>
+
+    <button type="submit">Save</button>
+    <button type="button" id="reset-btn">Reset</button>
+</form>
+
+<script>
+    const API = '/api/users'; // Symfony endpoint that proxies to Phoenix
+
+    let sortBy = 'first_name';
+    let sortDir = 'asc';
+
+    async function loadUsers() {
+        const res = await fetch(`${API}?sort_by=${sortBy}&sort_dir=${sortDir}`);
+        const users = await res.json();
+
+        const tbody = document.querySelector('#users-table tbody');
+        tbody.innerHTML = '';
+
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td>${u.first_name}</td>
+                <td>${u.last_name}</td>
+                <td>${u.birthdate}</td>
+                <td>${u.gender}</td>
+                <td class="actions">
+                    <button onclick="editUser('${u.id}')">Edit</button>
+                    <button onclick="deleteUser('${u.id}')">Delete</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const field = th.dataset.sort;
+
+            if (sortBy === field) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortBy = field;
+                sortDir = 'asc';
+            }
+
+            loadUsers();
+        });
+    });
+
+    editUser = (id) => {
+        fetch(`${API}/${id}`)
+            .then(r => r.json())
+            .then(u => {
+                document.getElementById('form-title').innerText = 'Edit User';
+                document.getElementById('user-id').value = u.id;
+                document.getElementById('first_name').value = u.first_name;
+                document.getElementById('last_name').value = u.last_name;
+                document.getElementById('birthdate').value = u.birthdate;
+                document.getElementById('gender').value = u.gender;
+            });
+    };
+
+    deleteUser = async (id) => {
+        await fetch(`${API}/${id}`, { method: 'DELETE' });
+        loadUsers();
+    };
+
+    document.getElementById('user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('user-id').value;
+        const body = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            birthdate: document.getElementById('birthdate').value,
+            gender: document.getElementById('gender').value,
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API}/${id}` : API;
+
+        await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        document.getElementById('user-form').reset();
+        document.getElementById('form-title').innerText = 'Add User';
+
+        loadUsers();
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('user-form').reset();
+        document.getElementById('form-title').innerText = 'Add User';
+        document.getElementById('user-id').value = '';
+    });
+
+    loadUsers();
+</script>
+
+</body>
+</html>
